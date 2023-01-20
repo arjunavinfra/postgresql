@@ -1,0 +1,34 @@
+show databases
+;
+SHOW databases;
+SHOW database
+SHOW databases;;
+SHOW database
+SHOW databas
+SHOW database;
+SHOW database
+SHOW databas
+SHOW database;
+SHOW databases;
+CREATE DATABASE dvdrental;
+use dvdrental
+show tables
+CREATE DATABASE dvdrental;;
+show tables;
+\l
+\c dvdrental
+\ts
+\dt
+\dt
+\dt
+\l
+\dt dvdrental
+\dt
+\c dvdrental
+\dt
+\d
+\dt
+\l
+\ld
+\s
+\s dvdrental
