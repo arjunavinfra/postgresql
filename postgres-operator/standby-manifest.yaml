@@ -6,11 +6,36 @@ spec:
   teamId: "acid"
   volume:
     size: 1Gi
-  numberOfInstances: 1
+  numberOfInstances: 2
   postgresql:
-    version: "15"
+    version: "12"
   # Make this a standby cluster and provide either the s3 bucket path of source cluster or the remote primary host for continuous streaming.
   standby:
     # s3_wal_path: "s3://mybucket/spilo/acid-minimal-cluster/abcd1234-2a4b-4b2a-8c9c-c1234defg567/wal/14/"
-    standby_host: "acid-minimal-cluster.default"
+    standby_host: "acid-main-cluster"
     # standby_port: "5432"
+
+  patroni:
+    pg_hba:
+  #     - local all all trust
+  #     - host all all 127.0.0.1/32 trust
+  #     - host all all ::1/128 trust
+  #     - local replication all trust
+  #     - host replication all 127.0.0.1/32 trust
+  #     - host replication all ::1/128 trust
+  #     - host replication repl 0.0.0.0/0 md5
+  #     - host all dba all md5
+  #     - host    standby    postgres 127.0.0.1/0               trust
+  #     - local   standby     postgres                                peer
+  #   # pg_hba:
+      - local     all          all                        trust
+      - hostssl   all          +standby 127.0.0.1/32     pam
+      - host      all          all       127.0.0.1/32     md5
+      - hostssl   all          +standby ::1/128          pam
+      - host      all          all       ::1/128          md5
+      - local     replication  standby                    trust
+      - hostssl   replication  standby   all              md5
+      - hostnossl all          all       all              reject
+      - hostssl   all          +standby all              pam
+      - hostssl   all          all       all              md5
+    # synchronous_mode: true

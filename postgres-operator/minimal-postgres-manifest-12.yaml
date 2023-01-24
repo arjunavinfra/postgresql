@@ -1,7 +1,7 @@
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
 metadata:
-  name: acid-upgrade-test
+  name: acid-main-cluster
 spec:
   teamId: "acid"
   volume:
@@ -18,3 +18,28 @@ spec:
     bar: {}
   postgresql:
     version: "12"
+
+
+  patroni:
+    pg_hba:
+    #   - local all all trust
+    #   - host all all 127.0.0.1/32 trust
+    #   - host all all ::1/128 trust
+    #   - local replication all trust
+    #   - host replication all 127.0.0.1/32 trust
+    #   - host replication all ::1/128 trust
+    #   - host replication repl 0.0.0.0/0 md5
+    #   - host all dba all md5
+    #   - host    standby    postgres 127.0.0.1/0               trust
+    #   - local   standby     postgres                                peer
+    # pg_hba:
+      - local     all          all                        trust
+      - hostssl   all          +standby 127.0.0.1/32     pam
+      - host      all          all       127.0.0.1/32     md5
+      - hostssl   all          +standby ::1/128          pam
+      - host      all          all       ::1/128          md5
+      - local     replication  standby                    trust
+      - hostssl   replication  standby   all              md5
+      - hostnossl all          all       all              reject
+      - hostssl   all          +standby all              pam
+      - hostssl   all          all       all              md5

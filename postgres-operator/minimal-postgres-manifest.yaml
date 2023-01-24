@@ -18,3 +18,17 @@ spec:
     bar: {}
   postgresql:
     version: "14"
+
+  patroni:
+    pg_hba:
+      - local     all  all  trust
+      - host      all  all  0.0.0.0/0   md5
+      - host      all  all  ::1/128     md5
+
+
+  # standby:
+  #   s3_wal_path: "s3://<bucketname>/spilo/<source_db_cluster>/<UID>/wal/<PGVERSION>"   
+  #   standby_host: "acid-minimal-cluster.default"
+  #   standby_port: "5433"
+
+
