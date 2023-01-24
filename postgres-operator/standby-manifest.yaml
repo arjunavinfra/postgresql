@@ -7,6 +7,8 @@ spec:
   volume:
     size: 1Gi
   numberOfInstances: 2
+  enableMasterLoadBalancer: true
+  enableReplicaLoadBalancer: true
   postgresql:
     version: "12"
   # Make this a standby cluster and provide either the s3 bucket path of source cluster or the remote primary host for continuous streaming.

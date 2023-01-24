@@ -3,6 +3,6 @@ kind: Kustomization
 bases:
   - ./postgres-operator
   
-resources:
-- postgres-operator-ui
+# resources:
+# - postgres-operator-ui
 # - "standby-secret.yaml"
