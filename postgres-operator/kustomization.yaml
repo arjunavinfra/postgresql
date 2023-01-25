@@ -11,8 +11,8 @@ resources:
 #POSTGRES
 
 # - minimal-postgres-manifest.yaml
-- minimal-postgres-manifest-12.yaml
+# - minimal-postgres-manifest-12.yaml
 
-# standby 
+# # standby 
 
-- standby-manifest.yaml
+# - standby-manifest.yaml

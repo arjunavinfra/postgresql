@@ -1,40 +1,43 @@
-kubectl apply -k ./
-
-kubectl wait   --for=condition=ready pod  -l component=argocd   --timeout=200s -n postgres
-
-POSTGRES_PASS=`kubectl get secrets -n postgres postgres.acid-main-cluster.credentials.postgresql.acid.zalan.do  -ojson  | jq .data.password | sed -e 's/"//g'`
-
-
-echo -e "postgresql password: `echo $POSTGRES_PASS | base64 -d` \n"
-
-
-
-STANDBY_PASS=`kubectl get secrets -n postgres standby.acid-main-cluster.credentials.postgresql.acid.zalan.do  -ojson  | jq .data.password | sed -e 's/"//g'`
-
-
-echo -e "standby password: `echo $STANDBY_PASS  | base64 -d`\n"
-
-
-
-echo -e "Patching the standby cluster with main cluster secret"
-
-
-kubectl patch secret postgres.acid-standby-cluster.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${POSTGRES_PASS}'"}]'
-
-
-echo -e "\n"
-
-
-echo -e "Patching the standby cluster with main cluster secret"
-
-kubectl patch secret standby.acid-standby-cluster.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${STANDBY_PASS}'"}]'
-
-
-echo -e "\n"
-
-echo  -e "forwarding port to local \n "
-pc
-
-kubectl  port-forward acid-main-cluster-0 5432:5432 &
-
-kubectl  port-forward acid-standby-cluster-0 5433:5432
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  annotations:
+    pv.kubernetes.io/provisioned-by: rancher.io/local-path
+  creationTimestamp: "2023-01-25T04:24:33Z"
+  deletionGracePeriodSeconds: 0
+  deletionTimestamp: "2023-01-25T04:27:53Z"
+  name: pvc-f36a178c-079b-4c94-ad88-21975f92b424
+  resourceVersion: "1219"
+  uid: 617f7d34-b341-4582-9480-63a4b819ba19
+spec:
+  accessModes:
+  - ReadWriteOnce
+  capacity:
+    storage: 1Gi
+  claimRef:
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    name: pgdata-acid-standby-cluster-0
+    namespace: default
+    resourceVersion: "779"
+    uid: f36a178c-079b-4c94-ad88-21975f92b424
+  hostPath:
+    path: /var/local-path-provisioner/pvc-f36a178c-079b-4c94-ad88-21975f92b424_default_pgdata-acid-standby-cluster-0
+    type: DirectoryOrCreate
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - dr1-control-plane
+  persistentVolumeReclaimPolicy: Delete
+  storageClassName: standard
+  volumeMode: Filesystem
+status:
+  phase: Bound

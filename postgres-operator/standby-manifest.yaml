@@ -7,29 +7,19 @@ spec:
   volume:
     size: 1Gi
   numberOfInstances: 2
-  enableMasterLoadBalancer: true
-  enableReplicaLoadBalancer: true
+  enableMasterLoadBalancer: false
+  enableReplicaLoadBalancer: false
   postgresql:
     version: "12"
-  # Make this a standby cluster and provide either the s3 bucket path of source cluster or the remote primary host for continuous streaming.
-  standby:
-    # s3_wal_path: "s3://mybucket/spilo/acid-minimal-cluster/abcd1234-2a4b-4b2a-8c9c-c1234defg567/wal/14/"
+  standby:   # Make this a standby cluster and provide either the s3 bucket path of source cluster or the remote primary host for continuous streaming.
+    # s3_wal_path: "s3://mybucket/spilo/acid-minimal-cluster/abcd1234-2a4b-4b2a-8c9c-c1234defg567/wal/14/" --> the url to S3 bucket containing the WAL archive of the remote primary.
     standby_host: "acid-main-cluster"
-    # standby_port: "5432"
+    standby_port: "5432"
 
   patroni:
+    # synchronous_mode: false #- Whether to use synchronous replication
+    # synchronous_mode_strict: false #Make the cluster READ ONLY if we don't have at least 1 synchronous replica.
     pg_hba:
-  #     - local all all trust
-  #     - host all all 127.0.0.1/32 trust
-  #     - host all all ::1/128 trust
-  #     - local replication all trust
-  #     - host replication all 127.0.0.1/32 trust
-  #     - host replication all ::1/128 trust
-  #     - host replication repl 0.0.0.0/0 md5
-  #     - host all dba all md5
-  #     - host    standby    postgres 127.0.0.1/0               trust
-  #     - local   standby     postgres                                peer
-  #   # pg_hba:
       - local     all          all                        trust
       - hostssl   all          +standby 127.0.0.1/32     pam
       - host      all          all       127.0.0.1/32     md5
@@ -40,4 +30,30 @@ spec:
       - hostnossl all          all       all              reject
       - hostssl   all          +standby all              pam
       - hostssl   all          all       all              md5
-    # synchronous_mode: true
+
+---  
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: acid-standby-cluster-external
+  namespace: postgres
+  labels:
+    application: spilo
+    cluster-name: acid-standby-cluster
+    spilo-role: replica
+    statefulset.kubernetes.io/pod-name: acid-standby-cluster-1
+    team: acid
+
+spec:
+  type: LoadBalancer
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+  selector:
+    application: spilo
+    cluster-name: acid-standby-cluster
+    spilo-role: replica
+    statefulset.kubernetes.io/pod-name: acid-standby-cluster-1
+    team: acid

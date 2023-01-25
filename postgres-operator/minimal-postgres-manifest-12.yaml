@@ -21,20 +21,10 @@ spec:
   postgresql:
     version: "12"
 
-
   patroni:
+    # synchronous_mode: false
+    # synchronous_mode_strict: false
     pg_hba:
-    #   - local all all trust
-    #   - host all all 127.0.0.1/32 trust
-    #   - host all all ::1/128 trust
-    #   - local replication all trust
-    #   - host replication all 127.0.0.1/32 trust
-    #   - host replication all ::1/128 trust
-    #   - host replication repl 0.0.0.0/0 md5
-    #   - host all dba all md5
-    #   - host    standby    postgres 127.0.0.1/0               trust
-    #   - local   standby     postgres                                peer
-    # pg_hba:
       - local     all          all                        trust
       - hostssl   all          +standby 127.0.0.1/32     pam
       - host      all          all       127.0.0.1/32     md5
