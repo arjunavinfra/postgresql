@@ -7,6 +7,13 @@ wait()
 
 }
 
+show_pass(){
+   POSTGRES_PASS=`kubectl get secrets -n postgres postgres.acid-main-cluster.credentials.postgresql.acid.zalan.do  -ojson  | jq .data.password | sed -e 's/"//g'`
+
+   STANDBY_PASS=`kubectl get secrets -n postgres standby.acid-main-cluster.credentials.postgresql.acid.zalan.do  -ojson  | jq .data.password | sed -e 's/"//g'`
+
+   echo "postgres password: $POSTGRES_PASS"
+}
 secret_patch(){
 
    secret_count=`kubectl  get secret  -n postgres| grep postgresql.acid.zalan.do  | wc -l`
@@ -24,13 +31,13 @@ secret_patch(){
 
    echo -e "Patching the standby cluster with main cluster secret...................................!"
 
-   kubectl patch secret postgres.acid-standby-cluster.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${POSTGRES_PASS}'"}]'
+   kubectl patch secret postgres.acid-$1.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${POSTGRES_PASS}'"}]'
 
    echo -e "\n"
 
    echo -e "Patching the standby cluster with main cluster secret....................................!"
 
-   kubectl patch secret standby.acid-standby-cluster.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${STANDBY_PASS}'"}]'
+   kubectl patch secret standby.acid-$1.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${STANDBY_PASS}'"}]'
 
 
 }
@@ -54,17 +61,18 @@ status()
 
       kubectl  logs acid-standby-cluster-0 | grep "FATAL:  password authentication failed" > /dev/null 
       if [[ $? = 0  ]]; then 
-         secret_patch
+         secret_patch $2
          echo "Problem with authetication"
          echo "Deleting the pods on standby"
-         kubectl delete pod acid-standby-cluster-0 acid-standby-cluster-1
+         kubectl delete pod acid-standby-${2}-0 acid-standby-${2}-1
          show_pass
          
       else 
          echo "No problem with authentcation"
          show_pass
-         exit
+         
       fi 
+
 
    else 
 
@@ -113,13 +121,27 @@ echo -e "\n"
 
 echo -e "Installing standby cluster.........................................................!"
 
-kubectl apply -f postgres-operator/standby-manifest.yaml
+kubectl apply -f postgres-operator/standby-manifest-cluster.yaml
 
 while [[ $(kubectl get postgresqls.acid.zalan.do acid-standby-cluster -ojson | jq -r .status.PostgresClusterStatus) != "Running" ]]; do
    wait 8
-   status standby
+   status standby cluster
    echo -e "\n" 
    echo "Standby Pod is still creating......! wait for a while"
 done
 
 
+echo -e "\n"
+
+echo -e "Installing standby cluster with backend s3.........................................................!"
+
+kubectl apply -f postgres-operator/standby-manifest-s3.yaml
+
+while [[ $(kubectl get postgresqls.acid.zalan.do acid-standby-s3 -ojson | jq -r .status.PostgresClusterStatus) != "Running" ]]; do
+   wait 8
+   status standby s3
+   echo -e "\n" 
+   echo "Standby Pod is still creating......! wait for a while"
+done
+
+show_pass

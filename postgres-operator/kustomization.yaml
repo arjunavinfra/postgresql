@@ -8,11 +8,7 @@ resources:
 - postgres-operator.yaml
 - api-service.yaml
 
-#POSTGRES
-
-# - minimal-postgres-manifest.yaml
-# - minimal-postgres-manifest-12.yaml
-
-# # standby 
-
-# - standby-manifest.yaml
+# files for WAL backup to S3
+- pod_environment_configmap.yaml
+patchesStrategicMerge:
+  - "postgres-cm.yaml"

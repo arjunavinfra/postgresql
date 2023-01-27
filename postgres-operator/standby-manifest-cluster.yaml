@@ -17,8 +17,8 @@ spec:
     standby_port: "5432"
 
   patroni:
-    # synchronous_mode: false #- Whether to use synchronous replication
-    # synchronous_mode_strict: false #Make the cluster READ ONLY if we don't have at least 1 synchronous replica.
+    synchronous_mode: false #- Whether to use synchronous replication
+    synchronous_mode_strict: false #Make the cluster READ ONLY if we don't have at least 1 synchronous replica.
     pg_hba:
       - local     all          all                        trust
       - hostssl   all          +standby 127.0.0.1/32     pam

@@ -1,30 +1,24 @@
 apiVersion: "acid.zalan.do/v1"
 kind: postgresql
 metadata:
-  name: acid-main-cluster
+  name: acid-standby-s3
 spec:
   teamId: "acid"
   volume:
     size: 2Gi
   numberOfInstances: 2
-  enableMasterLoadBalancer: true
-  enableReplicaLoadBalancer: true
-  users:
-    zalando:  # database owner
-    - superuser
-    - createdb
-    foo_user: []  # role for application foo
-  databases:
-    foo: zalando  # dbname: owner
-  preparedDatabases:
-    bar: {}
+  enableMasterLoadBalancer: false
+  enableReplicaLoadBalancer: false
   postgresql:
     version: "12"
-    parameters:
-      archive_timeout: "60"
+
+  standby:   # Make this a standby cluster and provide either the s3 bucket path of source cluster or the remote primary host for continuous streaming.
+    # s3_wal_path: "s3://mybucket/spilo/acid-minimal-cluster/abcd1234-2a4b-4b2a-8c9c-c1234defg567/wal/14/" --> the url to S3 bucket containing the WAL archive of the remote primary.
+      s3_wal_path: "s3://postgres-s3-wal-back/spilo/acid-main-cluster/wal/12/"
+
   patroni:
-    synchronous_mode: false
-    synchronous_mode_strict: false
+    synchronous_mode: false #- Whether to use synchronous replication
+    synchronous_mode_strict: false #Make the cluster READ ONLY if we don't have at least 1 synchronous replica.
     pg_hba:
       - local     all          all                        trust
       - hostssl   all          +standby 127.0.0.1/32     pam
@@ -37,27 +31,20 @@ spec:
       - hostssl   all          +standby all              pam
       - hostssl   all          all       all              md5
 
-
-
-
-
-
-
-
-
-
----
+---  
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: acid-main-cluster-external
+  name: acid-standby-s3-external
   namespace: postgres
   labels:
     application: spilo
-    cluster-name: acid-main-cluster
-    spilo-role: master
+    cluster-name: acid-standby-s3
+    spilo-role: replica
+    statefulset.kubernetes.io/pod-name: acid-standby-s3-1
     team: acid
+
 spec:
   type: LoadBalancer
   ports:
@@ -66,6 +53,7 @@ spec:
       targetPort: 5432
   selector:
     application: spilo
-    cluster-name: acid-main-cluster
-    spilo-role: master
+    cluster-name: acid-standby-s3
+    spilo-role: replica
+    statefulset.kubernetes.io/pod-name: acid-standby-s3-1
     team: acid
