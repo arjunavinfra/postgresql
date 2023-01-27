@@ -5,7 +5,7 @@ metadata:
 spec:
   teamId: "acid"
   volume:
-    size: 1Gi
+    size: 2Gi
   numberOfInstances: 2
   enableMasterLoadBalancer: false
   enableReplicaLoadBalancer: false
