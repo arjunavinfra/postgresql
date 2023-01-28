@@ -66,10 +66,12 @@ status()
          echo "Deleting the pods on standby"
          kubectl delete pod acid-standby-${2}-0 acid-standby-${2}-1
          show_pass
+         exit
          
       else 
          echo "No problem with authentcation"
          show_pass
+         exit
          
       fi 
 
@@ -131,17 +133,17 @@ while [[ $(kubectl get postgresqls.acid.zalan.do acid-standby-cluster -ojson | j
 done
 
 
-echo -e "\n"
+# echo -e "\n"
 
-echo -e "Installing standby cluster with backend s3.........................................................!"
+# echo -e "Installing standby cluster with backend s3.........................................................!"
 
-kubectl apply -f postgres-operator/standby-manifest-s3.yaml
+# kubectl apply -f postgres-operator/standby-manifest-s3.yaml
 
-while [[ $(kubectl get postgresqls.acid.zalan.do acid-standby-s3 -ojson | jq -r .status.PostgresClusterStatus) != "Running" ]]; do
-   wait 8
-   status standby s3
-   echo -e "\n" 
-   echo "Standby Pod is still creating......! wait for a while"
-done
+# while [[ $(kubectl get postgresqls.acid.zalan.do acid-standby-s3 -ojson | jq -r .status.PostgresClusterStatus) != "Running" ]]; do
+#    wait 8
+#    status standby s3
+#    echo -e "\n" 
+#    echo "Standby Pod is still creating......! wait for a while"
+# done
 
 show_pass

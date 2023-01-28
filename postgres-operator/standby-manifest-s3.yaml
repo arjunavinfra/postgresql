@@ -15,7 +15,7 @@ spec:
   standby:   # Make this a standby cluster and provide either the s3 bucket path of source cluster or the remote primary host for continuous streaming.
     # s3_wal_path: "s3://mybucket/spilo/acid-minimal-cluster/abcd1234-2a4b-4b2a-8c9c-c1234defg567/wal/14/" --> the url to S3 bucket containing the WAL archive of the remote primary.
       s3_wal_path: "s3://postgres-s3-wal-back/spilo/acid-main-cluster/wal/12/"
-
+      
   patroni:
     synchronous_mode: false #- Whether to use synchronous replication
     synchronous_mode_strict: false #Make the cluster READ ONLY if we don't have at least 1 synchronous replica.

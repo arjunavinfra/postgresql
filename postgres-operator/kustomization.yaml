@@ -10,5 +10,5 @@ resources:
 
 # files for WAL backup to S3
 - pod_environment_configmap.yaml
-patchesStrategicMerge:
-  - "postgres-cm.yaml"
+# patchesStrategicMerge:
+#   - "postgres-cm.yaml"

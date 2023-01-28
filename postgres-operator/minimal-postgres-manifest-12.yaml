@@ -20,8 +20,8 @@ spec:
     bar: {}
   postgresql:
     version: "12"
-    parameters:
-      archive_timeout: "60"
+    # parameters:
+    #   archive_timeout: "60"
   patroni:
     synchronous_mode: false
     synchronous_mode_strict: false
