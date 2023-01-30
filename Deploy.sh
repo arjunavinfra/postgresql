@@ -1,5 +1,16 @@
 #!/bin/bash 
 
+if [ $1 = "--clean" ]; then
+
+kunectl delete -k ./
+
+kubectl delete -f postgres-operator/minimal-postgres-manifest-12.yaml
+
+kubectl delete -f postgres-operator/standby-manifest-cluster.yaml
+
+exit 123
+
+fi 
 wait()
 
 {
@@ -31,13 +42,13 @@ secret_patch(){
 
    echo -e "Patching the standby cluster with main cluster secret...................................!"
 
-   kubectl patch secret postgres.acid-$1.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${POSTGRES_PASS}'"}]'
+   kubectl patch secret postgres.acid-main-$1.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${POSTGRES_PASS}'"}]'
 
    echo -e "\n"
 
    echo -e "Patching the standby cluster with main cluster secret....................................!"
 
-   kubectl patch secret standby.acid-$1.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${STANDBY_PASS}'"}]'
+   kubectl patch secret standby.acid-main-$1.credentials.postgresql.acid.zalan.do --type='json' -p='[{"op" : "replace" ,"path" : "/data/password" ,"value" : "'${STANDBY_PASS}'"}]'
 
 
 }
@@ -112,6 +123,7 @@ echo -e "Installing Postgres cluster............................................
 kubectl apply -f postgres-operator/minimal-postgres-manifest-12.yaml
 
 
+
 while [[ $(kubectl get postgresqls.acid.zalan.do acid-main-cluster -ojson | jq -r .status.PostgresClusterStatus) != "Running" ]]; do
    wait 8
    status main
@@ -147,3 +159,5 @@ done
 # done
 
 show_pass
+
+
